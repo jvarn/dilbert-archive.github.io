@@ -51,7 +51,7 @@ npm run preview
 
 ## Deployment
 
-This project is deployed to GitHub Pages at [https://dilbert-archive.github.io](https://dilbert-archive.github.io).
+This project is deployed to GitHub Pages at [https://jvarn.github.io/dilbert-archive](https://jvarn.github.io/dilbert-archive).
 
 The deployment is automated via GitHub Actions. When you push to the `main` branch, the workflow will:
 1. Build the production bundle
