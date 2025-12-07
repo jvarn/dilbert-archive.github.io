@@ -64,6 +64,11 @@ function SettingsModal({ isOpen, onClose, useLocalImages, setUseLocalImages }) {
                 Image Settings
               </h3>
               <ImageSourceToggle value={useLocalImages} onChange={setUseLocalImages} />
+              {useLocalImages && (
+                <p className="mt-3 text-xs text-gray-500 dark:text-gray-400 italic">
+                  Note: Local images are only available for localhost deployments. This option is intended for researchers who have saved or scraped all comics to a local folder on their computer.
+                </p>
+              )}
             </div>
           </div>
         </div>
