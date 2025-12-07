@@ -20,6 +20,10 @@ function App() {
   const [loadingYear, setLoadingYear] = useState(null) // Track which year is being loaded
   const [error, setError] = useState(null)
   const [loadedYears, setLoadedYears] = useState(new Set())
+  const [backgroundLoading, setBackgroundLoading] = useState(false)
+  const [backgroundLoadingYear, setBackgroundLoadingYear] = useState(null)
+  const [backgroundLoadedCount, setBackgroundLoadedCount] = useState(0)
+  const [backgroundTotalYears, setBackgroundTotalYears] = useState(0)
   const [useLocalImages, setUseLocalImages] = useState(() => {
     // Load preference from localStorage, default to false (use original URLs)
     if (typeof window !== 'undefined') {
@@ -128,6 +132,65 @@ function App() {
         setLoadingYear(null)
       })
   }, [baseUrl])
+
+  // Background loading: Load years 2022 down to 1989 after initial load
+  useEffect(() => {
+    if (!comicsIndex || loading || !currentDate || backgroundLoading) return
+
+    // Get years to load: 2022 down to 1989 (excluding 2023 which is already loaded)
+    const yearsToLoad = comicsIndex.years
+      .filter(year => {
+        const yearNum = parseInt(year)
+        return yearNum >= 1989 && yearNum <= 2022 && !loadedYears.has(year) && !comicsData[year]
+      })
+      .sort((a, b) => parseInt(b) - parseInt(a)) // Sort descending (2022 first)
+
+    if (yearsToLoad.length === 0) return
+
+    setBackgroundTotalYears(yearsToLoad.length)
+    setBackgroundLoading(true)
+    setBackgroundLoadedCount(0)
+
+    // Load years sequentially to avoid overwhelming the network
+    const loadNextYear = async (index) => {
+      if (index >= yearsToLoad.length) {
+        setBackgroundLoading(false)
+        setBackgroundLoadingYear(null)
+        return
+      }
+
+      const year = yearsToLoad[index]
+      
+      // Double-check year isn't already loaded (might have been loaded by navigation)
+      if (loadedYears.has(year) || comicsData[year]) {
+        setBackgroundLoadedCount(prev => prev + 1)
+        setTimeout(() => {
+          loadNextYear(index + 1)
+        }, 50)
+        return
+      }
+
+      setBackgroundLoadingYear(year)
+
+      try {
+        await loadYearData(year)
+        setBackgroundLoadedCount(prev => prev + 1)
+        // Small delay between loads to avoid overwhelming
+        setTimeout(() => {
+          loadNextYear(index + 1)
+        }, 100)
+      } catch (error) {
+        console.warn(`Failed to load year ${year} in background:`, error)
+        // Continue loading other years even if one fails
+        setBackgroundLoadedCount(prev => prev + 1)
+        setTimeout(() => {
+          loadNextYear(index + 1)
+        }, 100)
+      }
+    }
+
+    loadNextYear(0)
+  }, [comicsIndex, loading, currentDate, loadedYears, comicsData, loadYearData, backgroundLoading])
 
   // Lazy load adjacent years when navigating
   useEffect(() => {
@@ -677,6 +740,32 @@ function App() {
         useLocalImages={useLocalImages}
         setUseLocalImages={setUseLocalImages}
       />
+
+      {/* Background Loading Status */}
+      {backgroundLoading && (
+        <div className="fixed bottom-14 left-4 z-50 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 p-3 min-w-[220px]">
+          <div className="flex items-center gap-2 mb-2">
+            <div className="inline-block animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600 dark:border-blue-400"></div>
+            <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+              Loading archive...
+            </span>
+          </div>
+          {backgroundLoadingYear && (
+            <div className="text-xs text-gray-600 dark:text-gray-400 mb-1">
+              Loading {backgroundLoadingYear}...
+            </div>
+          )}
+          <div className="text-xs text-gray-500 dark:text-gray-500">
+            {backgroundLoadedCount} / {backgroundTotalYears} years loaded
+          </div>
+          <div className="mt-2 w-full bg-gray-200 dark:bg-gray-700 rounded-full h-1.5">
+            <div 
+              className="bg-blue-600 dark:bg-blue-500 h-1.5 rounded-full transition-all duration-300"
+              style={{ width: `${(backgroundLoadedCount / backgroundTotalYears) * 100}%` }}
+            ></div>
+          </div>
+        </div>
+      )}
 
       {/* Fixed Footer */}
       <footer className="fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 py-2 px-4 z-40">
