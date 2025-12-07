@@ -4,9 +4,11 @@ This repository contains accessible text transcripts of *Dilbert* comics spannin
 
 ## Project Structure
 
-- **dilbert_comics_transcripts.json**: The JSON file containing comic metadata and transcripts.
+- **data/dilbert_comics_transcripts.json**: The source JSON file containing all comic metadata and transcripts (used by the split script).
+- **public/comics-index.json**: Lightweight index file with dates, titles, and year references for fast initial loading.
+- **public/comics-data/**: Year-based JSON files (1989.json through 2023.json) for lazy loading.
 - **src/**: React application source code built with Vite, React, and Tailwind CSS.
-- **public/**: Public assets including the JSON data and images.
+- **public/**: Public assets including the split JSON data and images.
 - **images/**: Local comic images organized by year (1989-2023).
 
 ## Getting Started
@@ -60,6 +62,19 @@ The deployment is automated via GitHub Actions. When you push to the `main` bran
 To deploy manually:
 1. Build the project: `npm run build`
 2. The `dist/` folder contains the production-ready files
+
+### Regenerating Split JSON Files
+
+If you make edits to the source JSON file (`data/dilbert_comics_transcripts.json`), regenerate the split files:
+
+```bash
+npm run split-json
+```
+
+This will:
+- Read the source file from `data/dilbert_comics_transcripts.json`
+- Generate year-based files in `public/comics-data/`
+- Create/update `public/comics-index.json`
 
 ## Features
 

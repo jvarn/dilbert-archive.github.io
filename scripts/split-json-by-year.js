@@ -5,7 +5,7 @@ import { fileURLToPath } from 'url'
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 
-const inputFile = path.join(__dirname, '../public/dilbert_comics_transcripts.json')
+const inputFile = path.join(__dirname, '../data/dilbert_comics_transcripts.json')
 const outputDir = path.join(__dirname, '../public/comics-data')
 const indexFile = path.join(__dirname, '../public/comics-index.json')
 
