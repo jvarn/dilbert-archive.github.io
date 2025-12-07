@@ -7,6 +7,7 @@ import NavigationButtons from './components/NavigationButtons'
 import TranscriptPanel from './components/TranscriptPanel'
 import DarkModeToggle from './components/DarkModeToggle'
 import SettingsModal from './components/SettingsModal'
+import { getCachedIndex, cacheIndex, getCachedYear, cacheYear } from './utils/indexedDB'
 
 function App() {
   const [comicsIndex, setComicsIndex] = useState(null)
@@ -36,25 +37,36 @@ function App() {
 
   const baseUrl = import.meta.env.BASE_URL
 
-  // Helper function to load a year's data
+  // Helper function to load a year's data (with caching)
   const loadYearData = useCallback(async (year) => {
     if (loadedYears.has(year) || comicsData[year]) {
       return comicsData[year] || null
     }
 
-    try {
-      const response = await fetch(`${baseUrl}comics-data/${year}.json`)
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`)
+    // Try cache first
+    let data = await getCachedYear(year)
+    
+    if (!data) {
+      // Not in cache, fetch from network
+      try {
+        const response = await fetch(`${baseUrl}comics-data/${year}.json`)
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`)
+        }
+        data = await response.json()
+        // Cache it for next time (don't await, fire and forget)
+        cacheYear(year, data).catch(err => {
+          console.warn(`Failed to cache year ${year}:`, err)
+        })
+      } catch (error) {
+        console.error(`Error loading year ${year}:`, error)
+        throw error
       }
-      const data = await response.json()
-      setComicsData(prev => ({ ...prev, [year]: data }))
-      setLoadedYears(prev => new Set([...prev, year]))
-      return data
-    } catch (error) {
-      console.error(`Error loading year ${year}:`, error)
-      throw error
     }
+    
+    setComicsData(prev => ({ ...prev, [year]: data }))
+    setLoadedYears(prev => new Set([...prev, year]))
+    return data
   }, [baseUrl, loadedYears, comicsData])
 
   // Debounce search term - wait 500ms after last keystroke
@@ -66,23 +78,32 @@ function App() {
     return () => clearTimeout(timer)
   }, [searchTerm])
 
-  // Stage 1: Load index
+  // Stage 1: Load index (cache first)
   // Stage 2: Determine target year
-  // Stage 3: Load target year
+  // Stage 3: Load target year (cache first)
   // Stage 4: Initialize currentDate
   useEffect(() => {
-    // Stage 1: Load index
-    setLoadingStage('index')
-    setLoading(true)
-    
-    fetch(`${baseUrl}comics-index.json`)
-      .then(response => {
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status} - Could not find comics-index.json`)
+    const loadData = async () => {
+      try {
+        // Stage 1: Try to load index from cache first
+        setLoadingStage('index')
+        setLoading(true)
+        
+        let index = await getCachedIndex()
+        
+        if (!index) {
+          // Not in cache, fetch from network
+          const response = await fetch(`${baseUrl}comics-index.json`)
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status} - Could not find comics-index.json`)
+          }
+          index = await response.json()
+          // Cache it for next time (don't await, fire and forget)
+          cacheIndex(index).catch(err => {
+            console.warn('Failed to cache index:', err)
+          })
         }
-        return response.json()
-      })
-      .then(index => {
+        
         setComicsIndex(index)
         
         // Stage 2: Determine target year from URL or use latest
@@ -90,47 +111,55 @@ function App() {
         const dateParam = urlParams.get('date')
         const targetYear = dateParam ? dateParam.split('-')[0] : index.latestYear
         
-        // Stage 3: Load target year
+        // Stage 3: Try to load target year from cache first
         setLoadingStage('year')
         setLoadingYear(targetYear)
         
-        return fetch(`${baseUrl}comics-data/${targetYear}.json`)
-          .then(response => {
-            if (!response.ok) {
-              throw new Error(`HTTP error! status: ${response.status} - Could not find ${targetYear}.json`)
-            }
-            return response.json()
+        let yearData = await getCachedYear(targetYear)
+        
+        if (!yearData) {
+          // Not in cache, fetch from network
+          const response = await fetch(`${baseUrl}comics-data/${targetYear}.json`)
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status} - Could not find ${targetYear}.json`)
+          }
+          yearData = await response.json()
+          // Cache it for next time (don't await, fire and forget)
+          cacheYear(targetYear, yearData).catch(err => {
+            console.warn(`Failed to cache year ${targetYear}:`, err)
           })
-          .then(yearData => {
-            setComicsData({ [targetYear]: yearData })
-            setLoadedYears(new Set([targetYear]))
-            
-            // Stage 4: Initialize currentDate
-            if (dateParam && yearData[dateParam]) {
-              setCurrentDate(dateParam)
-            } else {
-              // Default to last comic date in the loaded year or overall latest
-              const dates = Object.keys(yearData).sort()
-              const defaultDate = dates.length > 0 ? dates[dates.length - 1] : 
-                (index.dates.length > 0 ? index.dates[index.dates.length - 1].date : null)
-              if (defaultDate) {
-                setCurrentDate(defaultDate)
-                window.history.replaceState({}, '', `?date=${defaultDate}`)
-              }
-            }
-            
-            setLoading(false)
-            setLoadingStage(null)
-            setLoadingYear(null)
-          })
-      })
-      .catch(error => {
+        }
+        
+        setComicsData({ [targetYear]: yearData })
+        setLoadedYears(new Set([targetYear]))
+        
+        // Stage 4: Initialize currentDate
+        if (dateParam && yearData[dateParam]) {
+          setCurrentDate(dateParam)
+        } else {
+          // Default to last comic date in the loaded year or overall latest
+          const dates = Object.keys(yearData).sort()
+          const defaultDate = dates.length > 0 ? dates[dates.length - 1] : 
+            (index.dates.length > 0 ? index.dates[index.dates.length - 1].date : null)
+          if (defaultDate) {
+            setCurrentDate(defaultDate)
+            window.history.replaceState({}, '', `?date=${defaultDate}`)
+          }
+        }
+        
+        setLoading(false)
+        setLoadingStage(null)
+        setLoadingYear(null)
+      } catch (error) {
         console.error('Error loading comics data:', error)
         setError(error.message)
         setLoading(false)
         setLoadingStage(null)
         setLoadingYear(null)
-      })
+      }
+    }
+    
+    loadData()
   }, [baseUrl])
 
   // Background loading: Load years 2022 down to 1989 after initial load
