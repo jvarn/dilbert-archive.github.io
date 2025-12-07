@@ -37,8 +37,9 @@ function App() {
 
   // Load comics data from JSON file
   useEffect(() => {
-    // Try the public directory path first
-    const jsonPath = '/dilbert_comics_transcripts.json'
+    // Use Vite's base URL to support flexible deployment paths
+    const baseUrl = import.meta.env.BASE_URL
+    const jsonPath = `${baseUrl}dilbert_comics_transcripts.json`
     
     fetch(jsonPath)
       .then(response => {

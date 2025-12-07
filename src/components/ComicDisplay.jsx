@@ -14,7 +14,9 @@ function ComicDisplay({ date, comic, comicsData, useLocalImages }) {
     if (useLocalImages && comicData.image) {
       // Extract year from date (YYYY-MM-DD format)
       const year = comicDate.split('-')[0]
-      return `/images/${year}/${comicData.image}`
+      // Use Vite's base URL to support flexible deployment paths
+      const baseUrl = import.meta.env.BASE_URL
+      return `${baseUrl}images/${year}/${comicData.image}`
     }
     
     return comicData.originalimageurl || ''
