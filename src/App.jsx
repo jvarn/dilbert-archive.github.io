@@ -697,10 +697,10 @@ function App() {
           <div className="flex items-center justify-between">
             <div className="flex-1">
               <h1 className="text-3xl md:text-4xl font-bold text-center bg-gradient-to-r from-blue-600 to-indigo-600 dark:from-blue-400 dark:to-indigo-400 bg-clip-text text-transparent">
-                Dilbert Archive
+                Dilbert Text Archive
               </h1>
               <p className="text-center text-gray-600 dark:text-gray-400 mt-2 text-sm md:text-base">
-                Preserving accessible transcripts of Dilbert comics (1989-2023)
+                  Unofficial, non-commercial, fan-made text transcripts to support accessibility and research.
               </p>
             </div>
             <div className="ml-4 flex items-center gap-2">
@@ -847,7 +847,10 @@ function App() {
 
       {/* Fixed Footer */}
       <footer className="fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 py-2 px-4 z-40">
-        <div className="max-w-7xl mx-auto flex items-center justify-center">
+        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-4">
+          <p className="text-xs text-gray-500 dark:text-gray-400 text-center">
+            Unofficial, fan-made text archive for accessibility & research. No images are hosted here.
+          </p>
           <a
             href="https://github.com/jvarn/dilbert-transcripts"
             target="_blank"

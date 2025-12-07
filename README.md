@@ -1,6 +1,52 @@
-# Dilbert Comic Transcripts (1989-2023)
+# Dilbert Text Archive
+<strong>Unofficial, non-commercial, fan-made text transcripts to support accessibility and research.</strong>
 
-This repository contains accessible text transcripts of *Dilbert* comics spanning from 1989 to 2023. The comics were discontinued in 2023, and the official website was taken down. This project aims to preserve the text from each comic's "speech bubbles", making it accessible for fans, researchers, and anyone who relies on screen readers for text content.
+This repository contains text-only transcripts of Dilbert comics published between 1989 and 2023.
+The project is intended as a research and accessibility resource, especially for:
+- Screen reader users
+- Text search / indexing
+- Natural language processing (NLP) experiments
+- Sentiment analysis
+- Fans and scholars interested in studying the dialogue and themes across the comic’s run
+
+The Dilbert website was discontinued in 2023, and many legacy archives are incomplete or difficult to navigate.
+This project aims to preserve the text content of the comics — not the artwork — so that it remains available for educational and analytical purposes.
+
+## Purpose of This Project
+
+This is a personal learning and accessibility project, created while learning:
+- web scraping and archival methods,
+- OCR pipelines for extracting speech bubble text,
+- dataset creation and cleaning,
+- building accessible reader interfaces,
+- and applying AI techniques such as sentiment analysis.
+
+The public repository exists so that others who are learning similar techniques may benefit from the dataset structure, tooling, and viewer interface.
+
+No images are hosted in this repository or on the deployed site.
+Where comic artwork appears, it is referenced only by direct links to existing public copies on archive.org.
+These transcripts may contain minor OCR or manual-entry inaccuracies; they are not intended to replace the original artwork or official publications.
+
+## Copyright and Fair Use Notice
+
+Dilbert, its characters, artwork, and original dialogue are copyrighted by their respective rights-holders.
+
+This project is:
+- Unofficial
+- Non-commercial
+- Fan-made
+- Intended solely for accessibility, research, and educational use
+- Limited to text-only transcripts drawn from publicly available archival copies of the comics.
+- Not a substitute for any official publication, collection, or licensed product
+
+No claim of ownership is made over the original creative work.
+All rights belong to their respective holders.
+
+## Takedown Requests
+
+If you are a copyright holder or authorised agent and would like any content in this repository or its deployed demo removed, please open an issue or contact me, and I will promptly comply with any legitimate takedown request.
+
+This project is maintained in good faith, with respect for the creators and rights-holders.
 
 ## Project Structure
 
@@ -9,7 +55,36 @@ This repository contains accessible text transcripts of *Dilbert* comics spannin
 - **public/comics-data/**: Year-based JSON files (1989.json through 2023.json) for lazy loading.
 - **src/**: React application source code built with Vite, React, and Tailwind CSS.
 - **public/**: Public assets including the split JSON data and images.
-- **images/**: Local comic images organized by year (1989-2023).
+- **images/**: Optional local reference images for development only (not used in the public deployment).
+
+## How the Transcripts Were Created
+
+The transcripts were produced using a multi-step process:
+1. Collecting comic image URLs from archive.org
+2. OCR extraction using <a href="https://github.com/jvarn/macos-comic-ocr">custom macOS Vision-based scripts</a>
+3. Manual correction of OCR errors
+4. Structuring the output into a uniform JSON dataset
+5. Building an accessible React-based viewer
+6. Optimising for performance
+
+This pipeline is published here for transparency and reproducibility.
+
+## Using the Dataset for Research
+
+The dataset is especially suitable for:
+- Sentiment analysis
+- Topic modeling
+- Dialogue evolution over time
+- Sociolinguistic studies
+- Accessibility research
+- Text mining
+
+If you use the dataset for academic purposes, please acknowledge the original Dilbert creators and this open-source archive.
+
+## License
+
+This project’s code is open-source.
+The transcripts are derivative of copyrighted works and are provided strictly for non-commercial, educational, and accessibility purposes.
 
 ## Getting Started
 
