@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dilbert Archive</title>
+  <script>
+    // GitHub Pages SPA fallback - redirect all 404s to index.html
+    // This allows React Router to handle client-side routing
+    var path = window.location.pathname;
+    var segments = path.split('/').filter(Boolean);
+    var basePath = '/dilbert-archive/';
+    
+    // If we're already at the base path, just redirect to index
+    if (path === basePath || path === basePath.slice(0, -1)) {
+      window.location.replace(basePath + 'index.html');
+    } else {
+      // Preserve the path and redirect to index.html
+      // React Router will handle the routing
+      var search = window.location.search;
+      var hash = window.location.hash;
+      window.location.replace(basePath + 'index.html' + search + hash);
+    }
+  </script>
+</head>
+<body>
+  <p>Redirecting...</p>
+</body>
+</html>
+
