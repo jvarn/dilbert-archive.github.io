@@ -48,7 +48,7 @@ function Article({ articleId, onBack }) {
 
           <div className="my-8 rounded-lg overflow-hidden shadow-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-6">
             <img
-              src={`${baseUrl}images/articles/Sentiment_Analysis_Figure_1.png`}
+              src={`${baseUrl}articles-images/Sentiment_Analysis_Figure_1.png`}
               alt="Year-by-Year Sentiment Trend in Dilbert Transcripts (1989-2023)"
               className="w-full h-auto rounded-lg"
             />
