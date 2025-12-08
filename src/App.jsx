@@ -7,6 +7,8 @@ import NavigationButtons from './components/NavigationButtons'
 import TranscriptPanel from './components/TranscriptPanel'
 import DarkModeToggle from './components/DarkModeToggle'
 import SettingsModal from './components/SettingsModal'
+import Blog from './components/Blog'
+import Article from './components/Article'
 import { getCachedIndex, cacheIndex, getCachedYear, cacheYear } from './utils/indexedDB'
 
 function App() {
@@ -36,8 +38,45 @@ function App() {
     return false
   })
   const [isSettingsOpen, setIsSettingsOpen] = useState(false)
+  const [currentView, setCurrentView] = useState('comics') // 'comics' or 'blog'
+  const [currentArticle, setCurrentArticle] = useState(null) // Article ID when viewing an article
 
   const baseUrl = import.meta.env.BASE_URL
+
+  // Handle URL parameters for routing
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search)
+    const view = urlParams.get('view')
+    const article = urlParams.get('article')
+    
+    if (view === 'blog') {
+      setCurrentView('blog')
+      setCurrentArticle(null)
+    } else if (article) {
+      setCurrentView('blog')
+      setCurrentArticle(article)
+    } else {
+      setCurrentView('comics')
+      setCurrentArticle(null)
+    }
+  }, [])
+
+  // Handle blog navigation
+  const handleBlogClick = () => {
+    setCurrentView('blog')
+    setCurrentArticle(null)
+    window.history.pushState({}, '', `${baseUrl}?view=blog`)
+  }
+
+  const handleArticleSelect = (articleId) => {
+    setCurrentArticle(articleId)
+    window.history.pushState({}, '', `${baseUrl}?view=blog&article=${articleId}`)
+  }
+
+  const handleBackToBlog = () => {
+    setCurrentArticle(null)
+    window.history.pushState({}, '', `${baseUrl}?view=blog`)
+  }
 
   // Helper function to load a year's data (with caching)
   const loadYearData = useCallback(async (year) => {
@@ -260,30 +299,43 @@ function App() {
   useEffect(() => {
     const handlePopState = async () => {
       const urlParams = new URLSearchParams(window.location.search)
+      const view = urlParams.get('view')
+      const article = urlParams.get('article')
       const dateParam = urlParams.get('date')
       
-      if (!dateParam || !comicsIndex) return
-      
-      const year = dateParam.split('-')[0]
-      
-      // Load year if needed
-      if (!comicsData[year]) {
-        setLoadingStage('year')
-        setLoadingYear(year)
-        try {
-          await loadYearData(year)
-        } catch (error) {
-          console.error('Error loading year for popstate:', error)
-          setError(error.message)
-        } finally {
-          setLoadingStage(null)
-          setLoadingYear(null)
-        }
+      // Handle blog/article navigation
+      if (view === 'blog') {
+        setCurrentView('blog')
+        setCurrentArticle(article || null)
+        return
       }
       
-      // Check if date exists in loaded data
-      if (comicsData[year]?.[dateParam]) {
-        setCurrentDate(dateParam)
+      // Handle comic navigation
+      if (dateParam && comicsIndex) {
+        const year = dateParam.split('-')[0]
+        
+        // Load year if needed
+        if (!comicsData[year]) {
+          setLoadingStage('year')
+          setLoadingYear(year)
+          try {
+            await loadYearData(year)
+          } catch (error) {
+            console.error('Error loading year for popstate:', error)
+            setError(error.message)
+          } finally {
+            setLoadingStage(null)
+            setLoadingYear(null)
+          }
+        }
+        
+        // Check if date exists in loaded data
+        if (comicsData[year]?.[dateParam]) {
+          setCurrentDate(dateParam)
+          setCurrentView('comics')
+        }
+      } else {
+        setCurrentView('comics')
       }
     }
 
@@ -703,13 +755,40 @@ function App() {
                   Unofficial, non-commercial, fan-made text transcripts to support accessibility and research.
               </p>
             </div>
-            <div className="ml-4 flex items-center gap-2">
-              <button
-                onClick={() => setIsSettingsOpen(true)}
-                className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-                aria-label="Open settings"
-                title="Settings"
-              >
+            <div className="ml-4 flex items-center gap-4">
+              <nav className="flex items-center gap-2">
+                <button
+                  onClick={() => {
+                    setCurrentView('comics')
+                    setCurrentArticle(null)
+                    window.history.pushState({}, '', baseUrl)
+                  }}
+                  className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                    currentView === 'comics'
+                      ? 'bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300'
+                      : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'
+                  }`}
+                >
+                  Comics
+                </button>
+                <button
+                  onClick={handleBlogClick}
+                  className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                    currentView === 'blog'
+                      ? 'bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300'
+                      : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'
+                  }`}
+                >
+                  Articles
+                </button>
+              </nav>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setIsSettingsOpen(true)}
+                  className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                  aria-label="Open settings"
+                  title="Settings"
+                >
                 <svg className="w-5 h-5 text-gray-600 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -717,13 +796,20 @@ function App() {
                 <span className="text-sm font-medium text-gray-700 dark:text-gray-300 hidden sm:inline">Settings</span>
               </button>
               <DarkModeToggle />
+              </div>
             </div>
           </div>
         </div>
       </header>
       
       <main role="main" className="w-full px-4 py-6">
-        {currentDate && currentComic ? (
+        {currentView === 'blog' ? (
+          currentArticle ? (
+            <Article articleId={currentArticle} onBack={handleBackToBlog} />
+          ) : (
+            <Blog onArticleSelect={handleArticleSelect} />
+          )
+        ) : currentDate && currentComic ? (
           <div className="flex flex-col lg:flex-row gap-6 w-full">
             {/* Left column - Comic (70%) */}
             <div className="w-full lg:flex-[7] min-w-0">
