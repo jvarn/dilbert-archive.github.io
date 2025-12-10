@@ -30,18 +30,18 @@ function AppLayout({ children, currentPath }) {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 transition-colors duration-200 pb-12">
-      <header role="banner" className="bg-white dark:bg-gray-800 shadow-md border-b border-gray-200 dark:border-gray-700">
-        <div className="max-w-6xl mx-auto px-4 py-6">
-          <div className="flex items-center justify-between">
-            <div className="flex-1">
-              <h1 className="text-3xl md:text-4xl font-bold text-center bg-gradient-to-r from-blue-600 to-indigo-600 dark:from-blue-400 dark:to-indigo-400 bg-clip-text text-transparent">
+      <header role="banner" className="bg-white dark:bg-gray-800 shadow-md border-b border-gray-200 dark:border-gray-700 w-full">
+        <div className="px-4 py-6">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div className="flex-1 min-w-0">
+              <h1 className="text-3xl md:text-4xl font-bold text-left bg-gradient-to-r from-blue-600 to-indigo-600 dark:from-blue-400 dark:to-indigo-400 bg-clip-text text-transparent">
                 Dilbert Text Archive
               </h1>
-              <p className="text-center text-gray-600 dark:text-gray-400 mt-2 text-sm md:text-base">
+              <p className="text-left text-gray-600 dark:text-gray-400 mt-2 text-sm md:text-base">
                   Unofficial, non-commercial, fan-made text transcripts to support accessibility and research.
               </p>
             </div>
-            <div className="ml-4 flex items-center gap-4">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 w-full sm:w-auto">
               <nav className="flex items-center gap-2">
                 <Link
                   to="/"
